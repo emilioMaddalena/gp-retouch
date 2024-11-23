@@ -12,12 +12,14 @@ class Retoucher:
         self.downscaled_image = None
 
     def load_image(self, path: Union[str, Path], grayscale: bool = True):
-        """
-        Load an image from a file path.
+        """_summary_
 
         Args:
-            path (str): Path to the image file.
-            grayscale (bool): Whether to load the image as grayscale.
+            path (Union[str, Path]): _description_
+            grayscale (bool, optional): _description_. Defaults to True.
+
+        Raises:
+            ValueError: _description_
         """
         if grayscale:
             self.image = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
@@ -27,29 +29,17 @@ class Retoucher:
             raise ValueError(f"Failed to load image from {path}")
         print("Image loaded successfully.")
 
-    def downscale_image(self, scale_factor: float):
-        """
-        Downscale the image by a specified factor.
-
-        Args:
-            scale_factor (float): Factor by which to downscale the image.
-        """
-        if self.image is None:
-            raise ValueError("No image loaded. Use 'load_image' first.")
-        width = int(self.image.shape[1] * scale_factor)
-        height = int(self.image.shape[0] * scale_factor)
-        self.downscaled_image = cv2.resize(
-            self.image, (width, height), interpolation=cv2.INTER_AREA
-        )
-        print("Image downscaled successfully.")
-
     def fill_nans(self, model, **model_args):
-        """
-        Fill NaN values in the image using an external machine learning model.
+        """_summary_
 
         Args:
-            model (callable): A callable that accepts an image with NaNs and returns the filled image.
-            model_args (dict): Additional arguments for the model.
+            model (_type_): _description_
+
+        Raises:
+            ValueError: _description_
+
+        Returns:
+            _type_: _description_
         """
         if self.downscaled_image is None:
             raise ValueError(
@@ -64,27 +54,3 @@ class Retoucher:
         self.downscaled_image = filled_image
         print("NaNs filled using the provided model.")
         return filled_image
-
-    def visualize_images(self):
-        """
-        Visualize the original and downscaled images.
-        """
-        if self.image is None:
-            raise ValueError("No image loaded. Use 'load_image' first.")
-        if self.downscaled_image is None:
-            raise ValueError(
-                "No downscaled image available. Use 'downscale_image' first."
-            )
-
-        plt.figure(figsize=(10, 5))
-        plt.subplot(1, 2, 1)
-        plt.title("Original Image")
-        plt.imshow(self.image, cmap="gray")
-        plt.axis("off")
-
-        plt.subplot(1, 2, 2)
-        plt.title("Downscaled Image")
-        plt.imshow(self.downscaled_image, cmap="gray")
-        plt.axis("off")
-
-        plt.show()
