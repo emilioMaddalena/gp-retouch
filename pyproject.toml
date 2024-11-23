@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "gp-retouch"
+version = "0.1.0"
+description = "A python package to retouch and reconstruct images using Gaussian processes."
+authors = ["emilioMaddalena <emilio.tanowe.maddalena@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
