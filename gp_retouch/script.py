@@ -1,7 +1,8 @@
-import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.datasets import load_sample_image
 import GPy
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.datasets import load_sample_image
+
 
 # Step 1: Load a grayscale image
 def load_grayscale_image():

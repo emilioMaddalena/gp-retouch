@@ -3,12 +3,10 @@ from skimage.transform import resize
 
 
 class ImageProcessor:
-    """
-    Handles low-level image processing tasks.
-    """
+    """Handles low-level image processing tasks."""
 
     def downscale(self, data: np.ndarray, factor: float) -> np.ndarray:
-        """_summary_
+        """_summary_.
 
         Args:
             data (np.ndarray): _description_
@@ -21,7 +19,7 @@ class ImageProcessor:
         return resize(data, new_shape, anti_aliasing=True)
 
     def convert_to_grayscale(self, data: np.ndarray) -> np.ndarray:
-        """_summary_
+        """_summary_.
 
         Args:
             data (np.ndarray): _description_

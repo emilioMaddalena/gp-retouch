@@ -2,17 +2,19 @@ from pathlib import Path
 from typing import Union
 
 import cv2  
-import matplotlib.pyplot as plt
 import numpy as np
 
 
 class Retoucher:
+    """_summary_."""
+
     def __init__(self):
+        """_summary_."""
         self.image = None
         self.downscaled_image = None
 
     def load_image(self, path: Union[str, Path], grayscale: bool = True):
-        """_summary_
+        """_summary_.
 
         Args:
             path (Union[str, Path]): _description_
@@ -30,7 +32,7 @@ class Retoucher:
         print("Image loaded successfully.")
 
     def fill_nans(self, model, **model_args):
-        """_summary_
+        """_summary_.
 
         Args:
             model (_type_): _description_
