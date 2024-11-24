@@ -16,5 +16,5 @@ dependencies = [
 
 [tool.ruff]
 line-length = 100
-extend-select = ["B", "E", "F"]
-ignore = ["E501", "W503"]
+select = ["D", "E501"]
+ignore = ["ANN", "D410", "D413", "D100"]
