@@ -3,6 +3,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 import pytest
+
 from gp_retouch.retoucher import Retoucher
 
 
@@ -40,9 +41,7 @@ def test_load_image_grayscale(mock_image, retoucher_instance):
 def test_load_image_color(mock_image, retoucher_instance):
     retoucher_instance.load_image(mock_image, grayscale=False)
     assert retoucher_instance.image is not None
-    assert (
-        len(retoucher_instance.image.shape) == 3
-    )  # Color image should have 3 channels
+    assert len(retoucher_instance.image.shape) == 3  # Color image should have 3 channels
 
 
 def test_load_image_invalid_path(retoucher_instance):
