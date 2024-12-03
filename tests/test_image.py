@@ -62,3 +62,31 @@ def test_is_incompelte(image_data_with_nans, grayscale_image_data):  # noqa: D10
 
     image = Image(grayscale_image_data)
     assert not image.is_incomplete, "Image recognized incomplete data when data was complete"
+
+
+def test_get_completeness_ratio(grayscale_image_data):  # noqa: D103
+    # Test complete image
+    image = Image(grayscale_image_data)
+    assert (
+        image.get_completeness_ratio() == 1.0
+    ), "Image recognized incomplete data when data was complete"
+
+    # Incomplete image
+    nan_ratio = 0.2
+
+    data_shape = (50, 50, 3)
+    data = np.random.rand(*data_shape)
+    total_elements = np.prod(data_shape)
+    num_nans = int(total_elements * nan_ratio)
+    flat_data = data.flatten()
+    nan_indices = np.random.choice(len(flat_data), num_nans, replace=False)
+    flat_data[nan_indices] = np.nan
+    data = flat_data.reshape(data_shape)
+
+    image = Image(data)
+    np.testing.assert_approx_equal(
+        image.get_completeness_ratio(),
+        1 - nan_ratio,
+        significant=3,
+        err_msg="Image did not recognize the right completness ratio",
+    )
