@@ -1,57 +1,61 @@
+import copy
+
 import matplotlib.pyplot as plt
 import numpy as np
 from skimage.transform import resize
+
+from .image import Image
 
 
 class ImageProcessor:
     """Handles low-level image processing tasks."""
 
-    def downscale(self, data: np.ndarray, factor: float) -> np.ndarray:
+    def downscale(self, original_image: Image, factor: float) -> Image:
+        """Downscale an image by factor."""
+        if factor <= 0:
+            raise ValueError("The downscale factor must be strictly greater than zero.")
+        if factor >= 1:
+            raise ValueError("The downscale factor must be strictly smaller than one.")
+        image = copy.deepcopy(original_image)
+        # process the dimensions relative to the size
+        new_shape = (int(image.shape[0] * factor), int(image.shape[1] * factor))
+        if image.is_grayscale:
+            downscaled_data = resize(image.data, new_shape, anti_aliasing=True)
+        if image.is_rgb:
+            downscaled_data = resize(image.data, new_shape + (3,), anti_aliasing=True)
+        image.data = downscaled_data
+        return image
+
+    def convert_to_grayscale(self, image: np.ndarray) -> np.ndarray:
         """_summary_.
 
         Args:
-            data (np.ndarray): _description_
-            factor (float): _description_
+            image (np.ndarray): _description_
 
         Returns:
             np.ndarray: _description_
         """
-        if len(data.shape) == 2:
-            new_shape = (int(data.shape[0] * factor), int(data.shape[1] * factor))
-            return resize(data, new_shape, anti_aliasing=True)
-        else:
-            raise ValueError("Only grayscale images are accepted.")
+        if len(image.shape) == 3 and image.shape[2] == 3:  # RGB image
+            return np.mean(image, axis=2).astype(np.uint8)
+        return image  # Already grayscale
 
-    def convert_to_grayscale(self, data: np.ndarray) -> np.ndarray:
+    def convert_to_rgb(self, image: np.ndarray) -> np.ndarray:
         """_summary_.
 
         Args:
-            data (np.ndarray): _description_
-
-        Returns:
-            np.ndarray: _description_
-        """
-        if len(data.shape) == 3 and data.shape[2] == 3:  # RGB image
-            return np.mean(data, axis=2).astype(np.uint8)
-        return data  # Already grayscale
-
-    def convert_to_rgb(self, data: np.ndarray) -> np.ndarray:
-        """_summary_.
-
-        Args:
-            data (np.ndarray): _description_
+            image (np.ndarray): _description_
 
         Returns:
             np.ndarray: _description_
         """
         pass
 
-    def print(self, data: np.ndarray):
+    def print(self, image: np.ndarray):
         """_summary_.
 
         Args:
-            data (np.ndarray): _description_
+            image (np.ndarray): _description_
         """
-        plt.imshow(data, cmap="gray")  # Use 'gray' for grayscale images
+        plt.imshow(image, cmap="gray")  # Use 'gray' for grayscale images
         plt.axis("off")  # Turn off axis labels and ticks
         plt.show()

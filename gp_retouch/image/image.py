@@ -3,8 +3,6 @@ from typing import Dict, Optional, Union
 
 import numpy as np
 
-from .image_processor import ImageProcessor
-
 
 class Image:
     """Represents an image and provides the user basic manipulation methods.
