@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Dict, Optional, Union
 
+import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -47,3 +48,8 @@ class Image:
 
     def save(self, filepath: str):  # noqa: D102
         pass
+
+    def plot(self):  # noqa: D102
+        plt.imshow(self.data)
+        plt.axis("off")  # Turn off the axis for better visualization
+        plt.show()
