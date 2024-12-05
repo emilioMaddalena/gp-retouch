@@ -26,18 +26,21 @@ class ImageProcessor:
         image.data = downscaled_data
         return image
 
-    def convert_to_grayscale(self, image: np.ndarray) -> np.ndarray:
+    def convert_to_grayscale(self, image: Image) -> Image:
         """_summary_.
 
         Args:
-            image (np.ndarray): _description_
+            image (Image): _description_
 
         Returns:
-            np.ndarray: _description_
+            Image: _description_
         """
-        if len(image.shape) == 3 and image.shape[2] == 3:  # RGB image
-            return np.mean(image, axis=2).astype(np.uint8)
-        return image  # Already grayscale
+        image_copy = copy.deepcopy(image)
+        if image_copy.is_grayscale:
+            return image
+        if image_copy.is_rgb:
+            image_copy.data = np.mean(image_copy.data, axis=2).astype(np.uint8)
+            return image_copy
 
     def convert_to_rgb(self, image: np.ndarray) -> np.ndarray:
         """_summary_.
