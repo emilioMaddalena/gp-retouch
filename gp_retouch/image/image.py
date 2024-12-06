@@ -23,7 +23,7 @@ class Image:
             data (np.ndarray): the image's actual data.
             metadata (Optional[Dict], optional): any extra info about the data.
         """
-        self.data = data
+        self.data = data.astype(float)
         self.metadata = metadata or {}
 
     @property
