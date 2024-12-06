@@ -10,7 +10,8 @@ from .image import Image
 class ImageProcessor:
     """Handles low-level image processing tasks."""
 
-    def downscale(self, original_image: Image, factor: float) -> Image:
+    @staticmethod
+    def downscale(original_image: Image, factor: float) -> Image:
         """Downscale an image by factor."""
         if factor <= 0:
             raise ValueError("The downscale factor must be strictly greater than zero.")
@@ -26,7 +27,8 @@ class ImageProcessor:
         image.data = downscaled_data
         return image
 
-    def convert_to_grayscale(self, image: Image) -> Image:
+    @staticmethod
+    def convert_to_grayscale(image: Image) -> Image:
         """_summary_.
 
         Args:
@@ -42,23 +44,36 @@ class ImageProcessor:
             image_copy.data = np.mean(image_copy.data, axis=2).astype(np.uint8)
             return image_copy
 
-    def convert_to_rgb(self, image: np.ndarray) -> np.ndarray:
-        """_summary_.
-
-        Args:
-            image (np.ndarray): _description_
-
-        Returns:
-            np.ndarray: _description_
-        """
+    @staticmethod
+    def convert_to_rgb(image: Image) -> np.ndarray:  # noqa: D102
         pass
 
-    def print(self, image: np.ndarray):
-        """_summary_.
+    @staticmethod
+    def drop_pixels(image: Image, ratio: bool, method: str = "rnd") -> Image:
+        """Drop pixels from the image (turn them into nans).
+
+        This method does not transform the image in place.
 
         Args:
-            image (np.ndarray): _description_
+            image (Image): the image to be transformed.
+            ratio (bool): the ratio of points to be dropped.
+            method (str, optional): TBW.
+
+        Returns:
+            Image: a new image with some pixels dropped.
         """
-        plt.imshow(image, cmap="gray")  # Use 'gray' for grayscale images
-        plt.axis("off")  # Turn off axis labels and ticks
-        plt.show()
+        if (ratio < 0) or (ratio > 1):
+            raise ValueError("ratio must be a greater than 0 and smaller than 1.")
+        new_image = copy.deepcopy(image)
+        n = new_image.shape[0]
+        m = new_image.shape[1]
+        num_pixels_drop = round(n * m * ratio)
+        indices_drop = np.random.choice(n * m, size=num_pixels_drop, replace=False)
+        row_drop, col_drop = np.unravel_index(indices_drop, (n, m))
+        if new_image.is_rgb:
+            new_image.data[row_drop, col_drop, :] = np.nan
+        elif new_image.is_grayscale:
+            print(row_drop)
+            print(col_drop)
+            new_image.data[row_drop, col_drop] = np.nan
+        return new_image
