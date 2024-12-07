@@ -1,8 +1,10 @@
-from pathlib import Path
+import copy
 from typing import Union
 
-import cv2  
+import GPy
 import numpy as np
+
+from .image.image import Image
 
 
 class Retoucher:
@@ -10,28 +12,21 @@ class Retoucher:
 
     def __init__(self):
         """_summary_."""
-        self.image = None
-        self.downscaled_image = None
+        pass
 
-    def load_image(self, path: Union[str, Path], grayscale: bool = True):
+    def load_image(self, image: Image):
         """_summary_.
 
         Args:
-            path (Union[str, Path]): _description_
-            grayscale (bool, optional): _description_. Defaults to True.
-
-        Raises:
-            ValueError: _description_
+            image (Image): _description_
         """
-        if grayscale:
-            self.image = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
-        else:
-            self.image = cv2.imread(path, cv2.IMREAD_COLOR)
-        if self.image is None:
-            raise ValueError(f"Failed to load image from {path}")
-        print("Image loaded successfully.")
+        self.image = copy.deepcopy(image)
 
-    def fill_nans(self, model, **model_args):
+    def learn_image(self):
+        """Learn the image pixel distribution."""
+        pass
+
+    def reconstruct_image(self) -> Image:
         """_summary_.
 
         Args:
@@ -43,16 +38,44 @@ class Retoucher:
         Returns:
             _type_: _description_
         """
-        if self.downscaled_image is None:
-            raise ValueError(
-                "No downscaled image available. Use 'downscale_image' first."
-            )
-        if not np.isnan(self.downscaled_image).any():
-            print("No NaNs found in the image. Nothing to fill.")
-            return self.downscaled_image
+        image = self.image
 
-        # Apply the model to fill NaNs
-        filled_image = model(self.downscaled_image, **model_args)
-        self.downscaled_image = filled_image
-        print("NaNs filled using the provided model.")
-        return filled_image
+        if not image.is_incomplete:
+            print("No missing pixels!")
+            return image
+
+        # Initialize the reconstructed image
+        reconstructed_data = np.zeros_like(image.data)
+
+        # Process each channel separately
+        channels = [image.data] if not image.is_rgb else [image.data[:, :, i] for i in range(3)]
+
+        for c_idx, channel in enumerate(channels):
+            # Get coordinates and values of non-NaN pixels
+            coords = np.argwhere(~np.isnan(channel))
+            values = channel[~np.isnan(channel)]
+
+            # Normalize coordinates for better numerical stability
+            coords_normalized = coords / np.array([channel.shape[0], channel.shape[1]])
+
+            # Define the kernel and GP model
+            kernel = GPy.kern.RBF(input_dim=2, variance=1.0, lengthscale=0.02)
+            gp = GPy.models.GPRegression(coords_normalized, values[:, None], kernel, noise_var=1e-6)
+
+            # Generate predictions for the entire image grid
+            grid_x, grid_y = np.meshgrid(
+                np.arange(channel.shape[0]), np.arange(channel.shape[1]), indexing="ij"
+            )
+            grid_coords = np.c_[grid_x.ravel(), grid_y.ravel()]
+            grid_coords_normalized = grid_coords / np.array([channel.shape[0], channel.shape[1]])
+
+            mean, _ = gp.predict(grid_coords_normalized)
+            reconstructed_channel = mean.reshape(channel.shape)
+
+            # Assign the reconstructed channel to the output
+            if image.is_rgb:
+                reconstructed_data[:, :, c_idx] = reconstructed_channel
+            else:
+                reconstructed_data = reconstructed_channel
+
+        return Image(reconstructed_data)
