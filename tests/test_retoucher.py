@@ -1,91 +1,105 @@
-from pathlib import Path
-
-import cv2
+import GPy
 import numpy as np
 import pytest
 
+from gp_retouch.image.image import Image
 from gp_retouch.retoucher import Retoucher
 
 
-# Helper function to create a mock image for testing
 @pytest.fixture
-def mock_image(tmp_path):
-    # Create a 100x100 grayscale image
-    img = np.full((100, 100), 128, dtype=np.uint8)
-    file_path = tmp_path / "test_image.png"
-    cv2.imwrite(str(file_path), img)
-    return file_path
+def grayscale_image():
+    """Create a mock grayscale image with missing pixels."""
+    data = np.random.rand(10, 10)
+    data[2:4, 2:4] = np.nan
+    return Image(data=data)
 
 
 @pytest.fixture
-def mock_image_with_nans(tmp_path):
-    # Create a 100x100 grayscale image with NaNs
-    img = np.full((100, 100), 128, dtype=np.float32)
-    img[50, 50] = np.nan  # Add a NaN value
-    file_path = tmp_path / "test_image_with_nans.png"
-    cv2.imwrite(str(file_path), img)
-    return file_path
+def rgb_image():
+    """Create a mock RGB image with missing pixels."""
+    data = np.random.rand(10, 10, 3)
+    data[2:4, 2:4, :] = np.nan
+    return Image(data=data)
 
 
-@pytest.fixture
-def retoucher_instance():
-    return Retoucher()
+def test_load_image(grayscale_image):
+    """Test loading an image."""
+    retoucher = Retoucher()
+    retoucher.load_image(grayscale_image)
+    assert retoucher.image is not None
+    assert np.allclose(retoucher.image.data, grayscale_image.data, atol=1e-4, equal_nan=True)
 
 
-def test_load_image_grayscale(mock_image, retoucher_instance):
-    retoucher_instance.load_image(mock_image, grayscale=True)
-    assert retoucher_instance.image is not None
-    assert retoucher_instance.image.shape == (100, 100)
+def test_learn_image_grayscale(grayscale_image):
+    """Test learning the kernel hyperparameters for a grayscale image."""
+    retoucher = Retoucher()
+    retoucher.load_image(grayscale_image)
+    retoucher.learn_image(max_iters=1)
+    assert retoucher.gp is not None
+    assert isinstance(retoucher.gp, GPy.models.GPRegression)
 
 
-def test_load_image_color(mock_image, retoucher_instance):
-    retoucher_instance.load_image(mock_image, grayscale=False)
-    assert retoucher_instance.image is not None
-    assert len(retoucher_instance.image.shape) == 3  # Color image should have 3 channels
+def test_learn_image_rgb(rgb_image):
+    """Test learning the kernel hyperparameters for an RGB image."""
+    retoucher = Retoucher()
+    retoucher.load_image(rgb_image)
+    retoucher.learn_image(max_iters=1)
+    assert retoucher.gp is not None
+    assert len(retoucher.gp) == 3
+    assert all(isinstance(gp_channel, GPy.models.GPRegression) for gp_channel in retoucher.gp)
 
 
-def test_load_image_invalid_path(retoucher_instance):
-    with pytest.raises(ValueError):
-        retoucher_instance.load_image("invalid_path.jpg")
+def test_reconstruct_image_grayscale(grayscale_image):
+    """Test reconstructing a grayscale image."""
+    retoucher = Retoucher()
+    retoucher.load_image(grayscale_image)
+    retoucher.learn_image(max_iters=1)
+    reconstructed_image = retoucher.reconstruct_image()
+
+    assert isinstance(reconstructed_image, Image)
+    assert reconstructed_image.shape == grayscale_image.shape
+    assert not np.any(np.isnan(reconstructed_image.data))
 
 
-def test_downscale_image(mock_image, retoucher_instance):
-    retoucher_instance.load_image(mock_image, grayscale=True)
-    retoucher_instance.downscale_image(0.5)
-    assert retoucher_instance.downscaled_image is not None
-    assert retoucher_instance.downscaled_image.shape == (50, 50)
+def test_reconstruct_image_rgb(rgb_image):
+    """Test reconstructing an RGB image."""
+    retoucher = Retoucher()
+    retoucher.load_image(rgb_image)
+    retoucher.learn_image(max_iters=1)
+    reconstructed_image = retoucher.reconstruct_image()
+
+    assert isinstance(reconstructed_image, Image)
+    assert reconstructed_image.shape == rgb_image.shape
+    assert not np.any(np.isnan(reconstructed_image.data))
 
 
-def test_downscale_image_without_loading(retoucher_instance):
-    with pytest.raises(ValueError):
-        retoucher_instance.downscale_image(0.5)
+def test_no_image_loaded():
+    """Test methods when no image is loaded."""
+    retoucher = Retoucher()
+
+    with pytest.raises(ValueError, match="No image loaded"):
+        retoucher.learn_image()
+
+    with pytest.raises(ValueError, match="No image loaded"):
+        retoucher.reconstruct_image()
 
 
-def test_fill_nans(mock_image_with_nans, retoucher_instance):
-    def mock_model(image, **kwargs):
-        # Replace NaNs with a constant value (e.g., 255)
-        image[np.isnan(image)] = 255
-        return image
+def test_no_gp_trained(grayscale_image):
+    """Test reconstructing an image before training the GP model."""
+    retoucher = Retoucher()
+    retoucher.load_image(grayscale_image)
 
-    retoucher_instance.load_image(mock_image_with_nans, grayscale=True)
-    retoucher_instance.downscale_image(1.0)  # Keep the same size
-    filled_image = retoucher_instance.fill_nans(mock_model)
-    assert filled_image is not None
-    assert not np.isnan(filled_image).any()
+    with pytest.raises(ValueError, match="No GP model trained"):
+        retoucher.reconstruct_image()
 
 
-def test_fill_nans_no_downscale(mock_image_with_nans, retoucher_instance):
-    def mock_model(image, **kwargs):
-        image[np.isnan(image)] = 255
-        return image
+def test_image_without_missing_pixels():
+    """Test reconstructing an image with no missing pixels."""
+    data = np.random.rand(10, 10)
+    image = Image(data=data)
+    retoucher = Retoucher()
+    retoucher.load_image(image)
+    retoucher.learn_image(max_iters=1)
+    reconstructed_image = retoucher.reconstruct_image()
 
-    retoucher_instance.load_image(mock_image_with_nans, grayscale=True)
-    with pytest.raises(ValueError):
-        retoucher_instance.fill_nans(mock_model)
-
-
-def test_visualize_images(mock_image, retoucher_instance):
-    retoucher_instance.load_image(mock_image, grayscale=True)
-    retoucher_instance.downscale_image(0.5)
-    # This is a visual method; we cannot assert much, but ensure it runs without errors
-    retoucher_instance.visualize_images()
+    assert np.array_equal(reconstructed_image.data, image.data)
