@@ -2,7 +2,9 @@
 name = "gp-retouch"
 version = "0.1.0"
 description = "A python package to retouch and reconstruct images using Gaussian processes."
-authors = ["emilioMaddalena <emilio.tanowe.maddalena@gmail.com>"]
+authors = [
+     {name = "Emilio Maddalena", email = "emilio.tanowe.maddalena@gmail.com"}
+]
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
