@@ -15,6 +15,11 @@ def rgb_image_data():  # noqa: D103
 
 
 @pytest.fixture
+def grayscale_nonsquare_data():  # noqa: D103
+    return np.random.randint(0, 256, (30, 50), dtype=np.uint8)
+
+
+@pytest.fixture
 def image_data_with_nans():  # noqa: D103
     # Generate random RGB image
     data = np.random.random((50, 50, 3))
@@ -54,6 +59,13 @@ def test_is_rgb(grayscale_image_data, rgb_image_data):  # noqa: D103
 
     image = Image(rgb_image_data)
     assert image.is_rgb, "Image failed to recognize an rgb image"
+
+
+def test_height_width(grayscale_nonsquare_data):  # noqa: D103
+    height, width = grayscale_nonsquare_data.shape
+    image = Image(grayscale_nonsquare_data)
+    assert image.height == height
+    assert image.width == width
 
 
 def test_is_incompelte(image_data_with_nans, grayscale_image_data):  # noqa: D103

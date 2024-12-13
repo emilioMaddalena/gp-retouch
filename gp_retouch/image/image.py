@@ -37,6 +37,22 @@ class Image:
     @property
     def shape(self) -> tuple:  # noqa: D102
         return self.data.shape
+    
+    @property
+    def height(self) -> tuple:  # noqa: D102
+        if self.is_grayscale:
+            height, _ = self.data.shape
+        elif self.is_rgb:
+            height, _, _ = self.data.shape
+        return height
+    
+    @property
+    def width(self) -> tuple:  # noqa: D102
+        if self.is_grayscale:
+            _, width = self.data.shape
+        elif self.is_rgb:
+            _, width, _ = self.data.shape
+        return width
 
     @property
     def is_incomplete(self) -> bool:  # noqa: D102
