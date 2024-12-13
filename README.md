@@ -1,5 +1,7 @@
 # gp-retouch
 
+![Tests](https://github.com/emilioMaddalena/gp-retouch/actions/workflows/run_tests.yml/badge.svg?branch=main)
+
 `gp-retouch` is a Gaussian process-based image processing package.
 
 This project is still in the very early stages of development. Its vision is to provide users with an easy-to-use toolbox for image processing, abstracting most of the low-level machine learning technicalities (à la scikit-learn). 
