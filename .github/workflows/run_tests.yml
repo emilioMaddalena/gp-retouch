@@ -1,4 +1,4 @@
-name: Run tests on main PR 
+name: Run tests on main 
 
 on:
   push:
@@ -15,7 +15,7 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  test-all:
 
     runs-on: ubuntu-latest
 
