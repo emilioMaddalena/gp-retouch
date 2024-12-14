@@ -62,18 +62,38 @@ class ImageProcessor:
         Returns:
             Image: a new image with some pixels dropped.
         """
-        if (ratio < 0) or (ratio > 1):
-            raise ValueError("ratio must be a greater than 0 and smaller than 1.")
         new_image = copy.deepcopy(image)
-        n = new_image.shape[0]
-        m = new_image.shape[1]
-        num_pixels_drop = round(n * m * ratio)
-        indices_drop = np.random.choice(n * m, size=num_pixels_drop, replace=False)
-        row_drop, col_drop = np.unravel_index(indices_drop, (n, m))
-        if new_image.is_rgb:
-            new_image.data[row_drop, col_drop, :] = np.nan
-        elif new_image.is_grayscale:
-            print(row_drop)
-            print(col_drop)
-            new_image.data[row_drop, col_drop] = np.nan
-        return new_image
+
+        if not (0 < ratio < 1):
+            raise ValueError("ratio must be a greater than 0 and smaller than 1.")
+        
+        if method == "rnd":
+            n = new_image.shape[0]
+            m = new_image.shape[1]
+            num_pixels_drop = round(n * m * ratio)
+            indices_drop = np.random.choice(n * m, size=num_pixels_drop, replace=False)
+            row_drop, col_drop = np.unravel_index(indices_drop, (n, m))
+            if new_image.is_rgb:
+                new_image.data[row_drop, col_drop, :] = np.nan
+            elif new_image.is_grayscale:
+                print(row_drop)
+                print(col_drop)
+                new_image.data[row_drop, col_drop] = np.nan
+            return new_image
+        
+        elif method == "rectangle":
+            height = new_image.height
+            width = new_image.width
+            # Build the rectangle
+            rect_height = int(height * ratio)
+            rect_width = int(width * ratio)
+            x = np.random.randint(0, width - rect_width)
+            y = np.random.randint(0, height - rect_height)
+            #x = (width - rect_width) // 2
+            #y = (height - rect_height) // 2
+            # Fill with NaNs
+            if image.is_grayscale:
+                new_image.data[y:y+rect_height, x:x+rect_width] = np.nan
+            elif image.is_rgb:
+                new_image.data[y:y+rect_height, x:x+rect_width, :] = np.nan
+            return new_image
