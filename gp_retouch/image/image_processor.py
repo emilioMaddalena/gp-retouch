@@ -66,7 +66,7 @@ class ImageProcessor:
 
         if not (0 < ratio < 1):
             raise ValueError("ratio must be a greater than 0 and smaller than 1.")
-        
+
         if method == "rnd":
             n = new_image.shape[0]
             m = new_image.shape[1]
@@ -80,7 +80,7 @@ class ImageProcessor:
                 print(col_drop)
                 new_image.data[row_drop, col_drop] = np.nan
             return new_image
-        
+
         elif method == "rectangle":
             height = new_image.height
             width = new_image.width
@@ -89,11 +89,35 @@ class ImageProcessor:
             rect_width = int(width * ratio)
             x = np.random.randint(0, width - rect_width)
             y = np.random.randint(0, height - rect_height)
-            #x = (width - rect_width) // 2
-            #y = (height - rect_height) // 2
             # Fill with NaNs
             if image.is_grayscale:
-                new_image.data[y:y+rect_height, x:x+rect_width] = np.nan
+                new_image.data[y : y + rect_height, x : x + rect_width] = np.nan
             elif image.is_rgb:
-                new_image.data[y:y+rect_height, x:x+rect_width, :] = np.nan
+                new_image.data[y : y + rect_height, x : x + rect_width, :] = np.nan
+            return new_image
+
+        elif method == "spiral":
+            turns = 3
+            n, m = new_image.height, new_image.width
+            center_y, center_x = n // 2, m // 2  # Center of the image
+
+            # Calculate the maximum radius of the spiral
+            max_radius = np.min([n, m]) // 2 * ratio
+
+            # Create a grid of indices
+            y, x = np.meshgrid(np.arange(n), np.arange(m), indexing="ij")
+            y_shifted = y - center_y
+            x_shifted = x - center_x
+
+            # Convert to polar coordinates
+            r = np.sqrt(x_shifted**2 + y_shifted**2)
+            theta = np.arctan2(y_shifted, x_shifted)
+
+            # Create a spiral mask based on the radius and angle
+            spiral_pattern = (theta + turns * 2 * np.pi * (r / max_radius)) % (2 * np.pi)
+            mask = (spiral_pattern < np.pi) & (r < max_radius)  # Define "active" spiral regions
+
+            # Apply NaN to the selected pixels
+            new_image.data[mask] = np.nan
+
             return new_image
