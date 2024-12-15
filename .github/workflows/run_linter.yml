@@ -1,4 +1,4 @@
-name: Lint
+name: Ruff Lint Check
 
 on:
   push:
@@ -10,8 +10,6 @@ on:
       - synchronize
       - reopened
   workflow_dispatch:
-
-  name: Ruff Lint Check
 
 jobs:
   lint:
