@@ -1,4 +1,4 @@
-name: Ruff Lint Check
+name: Linter
 
 on:
   push:
