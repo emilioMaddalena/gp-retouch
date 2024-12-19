@@ -7,6 +7,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "gpy>=1.13.2",
+    "gpytorch>=1.13",
     "ipykernel>=6.29.5",
     "matplotlib>=3.9.3",
     "numpy>=1.26.4",
