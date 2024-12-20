@@ -58,7 +58,7 @@ class Image:
     def is_incomplete(self) -> bool:  # noqa: D102
         return np.isnan(self.data).any()
 
-    def get_completeness_ratio(self) -> bool:
+    def get_completeness_ratio(self) -> float:
         """Compute the percentage of pixels that are not nans."""
         return 1 - (np.sum(np.isnan(self.data)) / self.data.size)
 
