@@ -49,6 +49,43 @@ class ImageProcessor:
         pass
 
     @staticmethod
+    def add_noise(image: Image, method: str = "gaussian", **kwargs) -> Image:
+        """Taint the image with the noise of your choice.
+
+        Args:
+            image (Image): the input.
+            method (str, optional): the noise method of choice. Defaults to "gaussian".
+            **kwargs: options to be passed to the individual methods.
+
+        Returns:
+            Image: the result.
+        """
+        def add_gaussian_noise(image: Image, variance: float) -> Image:
+            """Taint the image with Gaussian noise."""
+            if variance < 0:
+                raise ValueError("Variance must be non-negative.")
+
+            # Generate Gaussian noise
+            mean = 0
+            std_dev = np.sqrt(variance)
+            noise = np.random.normal(mean, std_dev, image.data.shape)
+            # Add noise to the image
+            image.data = image.data + noise
+            # Ensure it stays bounded
+            image.data = np.clip(image.data, 0, 255)
+            return image
+    
+        methods = {
+            "gaussian": add_gaussian_noise,
+        }
+
+        if method not in methods:
+            raise ValueError(f"Invalid method '{method}'. Valid ones: {list(methods.keys())}")
+        
+        # Dispatch the requested method
+        return methods[method](copy.deepcopy(image), **kwargs)
+
+    @staticmethod
     def drop_pixels(image: Image, ratio: bool, method: str = "rnd") -> Image:
         """Drop pixels from the image (turn them into nans).
 
