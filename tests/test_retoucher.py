@@ -15,10 +15,24 @@ def grayscale_image():
 
 
 @pytest.fixture
+def full_grayscale_image():
+    """Create a mock grayscale image."""
+    data = np.random.rand(10, 10)
+    return Image(data=data)
+
+
+@pytest.fixture
 def rgb_image():
     """Create a mock RGB image with missing pixels."""
     data = np.random.rand(10, 10, 3)
     data[2:4, 2:4, :] = np.nan
+    return Image(data=data)
+
+
+@pytest.fixture
+def full_rgb_image():
+    """Create a mock RGB image."""
+    data = np.random.rand(10, 10, 3)
     return Image(data=data)
 
 
@@ -59,6 +73,42 @@ def test_reconstruct_image_grayscale(grayscale_image):
     assert isinstance(reconstructed_image, Image)
     assert reconstructed_image.shape == grayscale_image.shape
     assert not np.any(np.isnan(reconstructed_image.data))
+
+
+def test_denoise_image(full_grayscale_image, full_rgb_image):
+    """The denoising quality is subjective and hard to check.
+
+    Here we're just checking for the returned class, shape and 
+    the completness ratio.
+    """
+    # Denoise grayscale
+    retoucher = Retoucher()
+    retoucher.load_image(full_grayscale_image)
+    retoucher.learn_image(max_iters=1)
+    denoised_image = retoucher.denoise_image(image=full_grayscale_image, factor=0.5)
+
+    assert isinstance(denoised_image, Image)
+    assert denoised_image.shape == full_grayscale_image.shape
+    assert denoised_image.get_completeness_ratio() == 1.
+
+    # Denoise rgb
+    retoucher = Retoucher()
+    retoucher.load_image(full_rgb_image)
+    retoucher.learn_image(max_iters=1)
+    denoised_image = retoucher.denoise_image(image=full_rgb_image, factor=0.5)
+
+    assert isinstance(denoised_image, Image)
+    assert denoised_image.shape == full_rgb_image.shape
+    assert denoised_image.get_completeness_ratio() == 1.
+
+    # Denoise factor = 0 -> must return the same input image w/o changes
+    retoucher = Retoucher()
+    retoucher.load_image(full_grayscale_image)
+    retoucher.learn_image(max_iters=1)
+    denoised_image = retoucher.denoise_image(image=full_grayscale_image, factor=0)
+
+    assert isinstance(denoised_image, Image)
+    assert np.all(denoised_image.data == full_grayscale_image.data)
 
 
 def test_reconstruct_image_rgb(rgb_image):
