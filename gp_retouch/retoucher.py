@@ -100,6 +100,26 @@ class Retoucher:
                 reconstructed_data = channel_data
 
         return Image(reconstructed_data)
+    
+    @staticmethod
+    def denoise_image(image: Image, factor: float) -> Image:
+        """_summary_.
+
+        Args:
+            image (Image): _description_
+            factor (float): _description_
+        """
+        pass
+
+    @staticmethod
+    def sharpen_image(image: Image, factor: float) -> Image:
+        """Make a full image sharper (sharper transitions).
+
+        Args:
+            image (Image): the image to be sharpened.
+            factor (float): _description_
+        """
+        pass
 
     @staticmethod
     def _get_non_nan_data(data):
