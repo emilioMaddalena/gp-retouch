@@ -86,75 +86,85 @@ class ImageProcessor:
         return methods[method](copy.deepcopy(image), **kwargs)
 
     @staticmethod
-    def drop_pixels(image: Image, ratio: bool, method: str = "rnd") -> Image:
-        """Drop pixels from the image (turn them into nans).
+    def drop_pixels(image: Image, ratio: float, method: str = "rnd") -> Image:
+        """Drop pixels from the image (turn them into NaNs) using the specified method.
 
         This method does not transform the image in place.
 
         Args:
-            image (Image): the image to be transformed.
-            ratio (bool): the ratio of points to be dropped.
-            method (str, optional): TBW.
+            image (Image): The image to be transformed.
+            ratio (float): The ratio of points to be dropped.
+            method (str, optional): The method to use for dropping pixels. Defaults to "rnd".
 
         Returns:
-            Image: a new image with some pixels dropped.
+            Image: A new image with some pixels dropped.
         """
-        new_image = copy.deepcopy(image)
-
         if not (0 < ratio < 1):
             raise ValueError("ratio must be a greater than 0 and smaller than 1.")
 
-        if method == "rnd":
-            n = new_image.shape[0]
-            m = new_image.shape[1]
-            num_pixels_drop = round(n * m * ratio)
-            indices_drop = np.random.choice(n * m, size=num_pixels_drop, replace=False)
-            row_drop, col_drop = np.unravel_index(indices_drop, (n, m))
-            if new_image.is_rgb:
-                new_image.data[row_drop, col_drop, :] = np.nan
-            elif new_image.is_grayscale:
-                print(row_drop)
-                print(col_drop)
-                new_image.data[row_drop, col_drop] = np.nan
-            return new_image
+        new_image = copy.deepcopy(image)
 
-        elif method == "rectangle":
-            height = new_image.height
-            width = new_image.width
-            # Build the rectangle
-            rect_height = int(height * ratio)
-            rect_width = int(width * ratio)
-            x = np.random.randint(0, width - rect_width)
-            y = np.random.randint(0, height - rect_height)
-            # Fill with NaNs
-            if image.is_grayscale:
-                new_image.data[y : y + rect_height, x : x + rect_width] = np.nan
-            elif image.is_rgb:
-                new_image.data[y : y + rect_height, x : x + rect_width, :] = np.nan
-            return new_image
+        # Dispatcher for pixel dropping methods
+        methods = {
+            "rnd": ImageProcessor._drop_pixels_random,
+            "rectangle": ImageProcessor._drop_pixels_rectangle,
+            "spiral": ImageProcessor._drop_pixels_spiral,
+        }
 
-        elif method == "spiral":
-            turns = 3
-            n, m = new_image.height, new_image.width
-            center_y, center_x = n // 2, m // 2  # Center of the image
+        if method not in methods:
+            raise ValueError(f"Invalid method '{method}'. Valid ones: {list(methods.keys())}")
 
-            # Calculate the maximum radius of the spiral
-            max_radius = np.min([n, m]) // 2 * ratio
+        return methods[method](new_image, ratio)
 
-            # Create a grid of indices
-            y, x = np.meshgrid(np.arange(n), np.arange(m), indexing="ij")
-            y_shifted = y - center_y
-            x_shifted = x - center_x
+    @staticmethod
+    def _drop_pixels_random(image: Image, ratio: float) -> Image:
+        """Drop pixels randomly from the image."""
+        n, m = image.shape[0], image.shape[1]
+        num_pixels_drop = round(n * m * ratio)
+        indices_drop = np.random.choice(n * m, size=num_pixels_drop, replace=False)
+        row_drop, col_drop = np.unravel_index(indices_drop, (n, m))
 
-            # Convert to polar coordinates
-            r = np.sqrt(x_shifted**2 + y_shifted**2)
-            theta = np.arctan2(y_shifted, x_shifted)
+        if image.is_rgb:
+            image.data[row_drop, col_drop, :] = np.nan
+        elif image.is_grayscale:
+            image.data[row_drop, col_drop] = np.nan
 
-            # Create a spiral mask based on the radius and angle
-            spiral_pattern = (theta + turns * 2 * np.pi * (r / max_radius)) % (2 * np.pi)
-            mask = (spiral_pattern < np.pi) & (r < max_radius)  # Define "active" spiral regions
+        return image
 
-            # Apply NaN to the selected pixels
-            new_image.data[mask] = np.nan
+    @staticmethod
+    def _drop_pixels_rectangle(image: Image, ratio: float) -> Image:
+        """Drop pixels in a rectangular region."""
+        height, width = image.height, image.width
+        rect_height = int(height * ratio)
+        rect_width = int(width * ratio)
+        x = np.random.randint(0, width - rect_width)
+        y = np.random.randint(0, height - rect_height)
 
-            return new_image
+        if image.is_grayscale:
+            image.data[y : y + rect_height, x : x + rect_width] = np.nan
+        elif image.is_rgb:
+            image.data[y : y + rect_height, x : x + rect_width, :] = np.nan
+
+        return image
+
+    @staticmethod
+    def _drop_pixels_spiral(image: Image, ratio: float) -> Image:
+        """Drop pixels in a spiral pattern."""
+        turns = 3
+        n, m = image.height, image.width
+        center_y, center_x = n // 2, m // 2 
+
+        max_radius = np.min([n, m]) // 2 * ratio
+        y, x = np.meshgrid(np.arange(n), np.arange(m), indexing="ij")
+        y_shifted = y - center_y
+        x_shifted = x - center_x
+
+        r = np.sqrt(x_shifted**2 + y_shifted**2)
+        theta = np.arctan2(y_shifted, x_shifted)
+
+        spiral_pattern = (theta + turns * 2 * np.pi * (r / max_radius)) % (2 * np.pi)
+        mask = (spiral_pattern < np.pi) & (r < max_radius)
+
+        image.data[mask] = np.nan
+
+        return image
