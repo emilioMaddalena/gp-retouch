@@ -100,6 +100,67 @@ class Retoucher:
                 reconstructed_data = channel_data
 
         return Image(reconstructed_data)
+    
+    def denoise_image(self, image: Image, factor: float) -> Image:
+        """Get rid of unwanted random noise in an image using Gaussian Processes.
+
+        Args:
+            image (Image): The input image (grayscale or RGB).
+            factor (float): A 0 to 1 factor that controls the filter intensity.
+
+        Returns:
+            Image: The denoised image.
+        """
+        if self.image is None:
+            raise ValueError("No image loaded. Use load_image() to load an image.")
+
+        if self.image.is_incomplete:
+            print("Image must be compelte!")
+            return self.image
+
+        if self.gp is None:
+            raise ValueError("No GP model trained. Use learn_image() to train the model.")
+
+        if not 0 <= factor <= 1:
+            raise ValueError("Factor must be between 0 and 1.")
+
+        # Prepare the data for denoising
+        channels = 3 if image.is_rgb else 1
+        data_list = [
+            image.data[..., channel] if image.is_rgb else image.data
+            for channel in range(channels)
+        ]
+        denoised_data = np.zeros_like(image.data)
+
+        for i, channel_data in enumerate(data_list):
+            _, grid_coords_normalized = self._get_grid_coords(channel_data)
+
+            # Predict channel values
+            mean, _ = (self.gp[i] if self.image.is_rgb else self.gp).predict(grid_coords_normalized)
+            smoothed_channel = mean.reshape(channel_data.shape)
+
+            # Blend the original and smoothed images based on the factor
+            denoised_channel = (1 - factor) * channel_data + factor * smoothed_channel
+
+            if image.is_rgb:
+                denoised_data[..., i] = denoised_channel
+            else:
+                denoised_data = denoised_channel
+
+        return Image(denoised_data)
+
+    @staticmethod
+    def sharpen_image(image: Image, factor: float) -> Image:
+        """Make a full image sharper (sharper transitions).
+
+        Args:
+            image (Image): the input.
+            factor (float): a 0 to 1 factor that controls the filter intensity.
+
+        Returns:
+            Image: the result.
+        """
+        pass
 
     @staticmethod
     def _get_non_nan_data(data):
