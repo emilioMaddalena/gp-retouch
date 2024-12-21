@@ -15,6 +15,12 @@ def rgb_image() -> np.ndarray:  # noqa: D103
     return gp_retouch.load_image(image_path)
 
 
+@pytest.fixture
+def grayscale_image() -> np.ndarray:  # noqa: D103
+    image_path = Path("tests") / "data" / "pikachu.png"
+    return gp_retouch.load_image(image_path)
+
+
 @pytest.mark.parametrize("downscale_factor", [0.8, 0.2, 0.01])
 def test_downscale(rgb_image, downscale_factor):  # noqa: D103
     downscaled_image = ImageProcessor.downscale(rgb_image, downscale_factor)
@@ -33,3 +39,53 @@ def test_drop_pixels(rgb_image, ratio):  # noqa: D103
     new_image = ImageProcessor.drop_pixels(rgb_image, ratio)
     num_pixels_new = new_image.shape[0] * new_image.shape[1]
     assert (num_pixels * ratio) - num_pixels_new < 1
+
+
+@pytest.mark.parametrize("variance", [0, 10, 100, 1000])
+def test_add_gaussian_noise(grayscale_image, variance):  # noqa: D103
+    noisy_image = ImageProcessor.add_noise(grayscale_image, method="gaussian", variance=variance)
+    assert isinstance(noisy_image, Image)
+    assert noisy_image.shape == grayscale_image.shape
+    assert noisy_image.get_completeness_ratio() == 1.
+    if variance == 0:
+        assert np.all(noisy_image.data == grayscale_image.data)
+
+
+@pytest.mark.parametrize(
+    ("amount", "salt_ratio"),
+    [
+        (0.1, 0.1),
+        (0.9, 0.1),
+        (0.1, 0.9),
+        (0.9, 0.9),
+    ],
+)
+def test_add_salt_and_pepper_noise(grayscale_image, amount, salt_ratio):  # noqa: D103
+    noisy_image = ImageProcessor.add_noise(
+        grayscale_image, method="salt_and_pepper", amount=amount, salt_ratio=salt_ratio
+    )
+    assert isinstance(noisy_image, Image)
+    assert noisy_image.shape == grayscale_image.shape
+    assert noisy_image.get_completeness_ratio() == 1.
+    
+
+@pytest.mark.parametrize("variance", [0, 10, 100, 1000])
+def test_add_speckle_noise(grayscale_image, variance):  # noqa: D103
+    noisy_image = ImageProcessor.add_noise(grayscale_image, method="speckle", variance=variance)
+    assert isinstance(noisy_image, Image)
+    assert noisy_image.shape == grayscale_image.shape
+    assert noisy_image.get_completeness_ratio() == 1.
+    if variance == 0:
+        assert np.all(noisy_image.data == grayscale_image.data)
+
+
+@pytest.mark.parametrize("intensity", [0, 10, 100, 1000])
+def test_add_uniform_noise(grayscale_image, intensity):  # noqa: D103
+    noisy_image = ImageProcessor.add_noise(grayscale_image, method="uniform", intensity=intensity)
+    assert isinstance(noisy_image, Image)
+    assert noisy_image.shape == grayscale_image.shape
+    assert noisy_image.get_completeness_ratio() == 1.
+    if intensity == 0:
+        assert np.all(noisy_image.data == grayscale_image.data)
+
+    

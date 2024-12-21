@@ -15,7 +15,7 @@ Feel free to reach out if you have ideas! 😉
 
 - [x] Lay out the basic project structure and classes.
 - [x] Write a first reconstruction method.
-- [ ] Migrate from PIL to Pillow.
+- [ ] Find a suitable GPy alternative and migrate the code?
 - [ ] Make `loader.py` more robust.
-- [ ] Implement additional pixel-dropping methods beyond random selection.
+- [x] Implement additional pixel-dropping methods beyond random selection.
 - [ ] For RGB images, explore correlations among channels during reconstructing.

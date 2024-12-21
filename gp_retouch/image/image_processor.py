@@ -53,37 +53,88 @@ class ImageProcessor:
         """Taint the image with the noise of your choice.
 
         Args:
-            image (Image): the input.
-            method (str, optional): the noise method of choice. Defaults to "gaussian".
-            **kwargs: options to be passed to the individual methods.
+            image (Image): The input image.
+            method (str, optional): The noise method of choice: gausian, salt_and_pepper,
+                                    speckle, or uniform. Defaults to "gaussian".
+            **kwargs: Options to be passed to the individual methods.
 
         Returns:
-            Image: the result.
+            Image: The result with added noise.
         """
-        def add_gaussian_noise(image: Image, variance: float) -> Image:
-            """Taint the image with Gaussian noise."""
-            if variance < 0:
-                raise ValueError("Variance must be non-negative.")
-
-            # Generate Gaussian noise
-            mean = 0
-            std_dev = np.sqrt(variance)
-            noise = np.random.normal(mean, std_dev, image.data.shape)
-            # Add noise to the image
-            image.data = image.data + noise
-            # Ensure it stays bounded
-            image.data = np.clip(image.data, 0, 255)
-            return image
-    
         methods = {
-            "gaussian": add_gaussian_noise,
+            "gaussian": ImageProcessor._add_gaussian_noise,
+            "salt_and_pepper": ImageProcessor._add_salt_and_pepper_noise,
+            "speckle": ImageProcessor._add_speckle_noise,
+            "uniform": ImageProcessor._add_uniform_noise,
         }
 
         if method not in methods:
-            raise ValueError(f"Invalid method '{method}'. Valid ones: {list(methods.keys())}")
-        
+            raise ValueError(f"Invalid method '{method}'. Valid methods: {list(methods.keys())}")
+
         # Dispatch the requested method
         return methods[method](copy.deepcopy(image), **kwargs)
+    
+    @staticmethod
+    def _add_gaussian_noise(image: Image, variance: float) -> Image:
+        """Taint the image with Gaussian noise."""
+        if variance < 0:
+            raise ValueError("Variance must be non-negative.")
+        
+        # Generate Gaussian noise
+        mean = 0
+        std_dev = np.sqrt(variance)
+        noise = np.random.normal(mean, std_dev, image.data.shape)
+        # Add noise to the image
+        image.data = image.data + noise
+        # Ensure it stays bounded
+        image.data = np.clip(image.data, 0, 255)
+        return image
+    
+    @staticmethod
+    def _add_salt_and_pepper_noise(image: Image, amount: float, salt_ratio: float = 0.5) -> Image:
+        """Taint the image with salt-and-pepper noise."""
+        if not (0 < amount < 1):
+            raise ValueError("Amount must be between 0 and 1.")
+        if not (0 <= salt_ratio <= 1):
+            raise ValueError("Salt ratio must be between 0 and 1.")
+
+        num_pixels = np.prod(image.data.shape[:2])
+        num_salt = int(amount * num_pixels * salt_ratio)
+        num_pepper = int(amount * num_pixels * (1 - salt_ratio))
+
+        # Add salt noise
+        salt_coords = tuple(
+            np.random.randint(0, i, num_salt) for i in image.data.shape[:2]
+        )
+        image.data[salt_coords] = 255
+        # Add pepper noise
+        pepper_coords = tuple(
+            np.random.randint(0, i, num_pepper) for i in image.data.shape[:2]
+        )
+        image.data[pepper_coords] = 0
+        return image
+
+    @staticmethod
+    def _add_speckle_noise(image: Image, variance: float) -> Image:
+        """Taint the image with speckle noise."""
+        if variance < 0:
+            raise ValueError("Variance must be non-negative.")
+
+        noise = np.random.normal(0, np.sqrt(variance), image.data.shape)
+        image.data = image.data + image.data * noise
+        image.data = np.clip(image.data, 0, 255)
+        return image
+
+    @staticmethod
+    def _add_uniform_noise(image: Image, intensity: float) -> Image:
+        """Taint the image with uniform noise."""
+        if intensity < 0:
+            raise ValueError("Intensity must be non-negative.")
+
+        noise = np.random.uniform(-intensity, intensity, image.data.shape)
+        image.data = image.data + noise
+        image.data = np.clip(image.data, 0, 255)
+        return image
 
     @staticmethod
     def drop_pixels(image: Image, ratio: float, method: str = "rnd") -> Image:
