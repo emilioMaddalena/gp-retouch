@@ -24,15 +24,18 @@ class Artist:
         Returns:
             Image: the returned image object.
         """
-        # Create GP model based on random centers
-        x = np.random.rand(num_centers, 2) * np.array(image_size)
+        # Create GP model based on random centers (lying on the image grid)
+        grid_points, _ = Artist._get_grid_coords(image_size)
+        x_idxs = np.random.choice(grid_points.shape[0], num_centers, replace=False)
+        x = grid_points[x_idxs]
         y = np.random.rand(num_centers, 1) * 255  
         gp = GPy.models.GPRegression(x, y, kernel, noise_var=MIN_NOISE_VAR)
 
         # Predict values on the grid
         grid_coords, _ = Artist._get_grid_coords(image_size)
         mean, _ = gp.predict(grid_coords)
-        return Image(data=mean.reshape(image_size))
+        mean_normalized = 255 * (mean - mean.min()) / (mean.max() - mean.min())
+        return Image(data=mean_normalized.reshape(image_size))
 
 
     @staticmethod
