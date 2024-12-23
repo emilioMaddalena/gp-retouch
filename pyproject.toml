@@ -20,6 +20,7 @@ dependencies = [
 packages = ["gp_retouch"]
 
 [tool.ruff]
+include = ["pyproject.toml", "gp_retouch/**/*.py", "tests/**/*.py"]
 line-length = 100
 
 [tool.ruff.lint]
