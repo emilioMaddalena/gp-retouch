@@ -85,9 +85,7 @@ class ImageProcessor:
         std_dev = np.sqrt(variance)
         noise = np.random.normal(mean, std_dev, image.data.shape)
         # Add noise to the image
-        image.data = image.data + noise
-        # Ensure it stays bounded
-        image.data = np.clip(image.data, 0, 255)
+        image.data = ImageProcessor._filter_values(image.data + noise)
         return image
     
     @staticmethod
@@ -121,8 +119,7 @@ class ImageProcessor:
             raise ValueError("Variance must be non-negative.")
 
         noise = np.random.normal(0, np.sqrt(variance), image.data.shape)
-        image.data = image.data + image.data * noise
-        image.data = np.clip(image.data, 0, 255)
+        image.data = ImageProcessor._filter_values(image.data + image.data * noise)
         return image
 
     @staticmethod
@@ -132,8 +129,7 @@ class ImageProcessor:
             raise ValueError("Intensity must be non-negative.")
 
         noise = np.random.uniform(-intensity, intensity, image.data.shape)
-        image.data = image.data + noise
-        image.data = np.clip(image.data, 0, 255)
+        image.data = ImageProcessor._filter_values(image.data + noise)
         return image
 
     @staticmethod
@@ -219,3 +215,10 @@ class ImageProcessor:
         image.data[mask] = np.nan
 
         return image
+
+    @staticmethod
+    def _filter_values(data: np.ndarray) -> np.ndarray:
+        """."""
+        min_pixel_value = 0
+        max_pixel_value = 255
+        return np.clip(data, min_pixel_value, max_pixel_value)

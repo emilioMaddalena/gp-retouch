@@ -4,6 +4,9 @@ from typing import Dict, Optional, Union
 import matplotlib.pyplot as plt
 import numpy as np
 
+MIN_PIXEL_VALUE = 0
+MAX_PIXEL_VALUE = 255
+PIXEL_DATA_TYPE = float
 
 class Image:
     """Represents an image and provides the user basic manipulation methods.
@@ -23,8 +26,20 @@ class Image:
             data (np.ndarray): the image's actual data.
             metadata (Optional[Dict], optional): any extra info about the data.
         """
-        self.data = data.astype(float)
+        self._data = None
+        self.data = data
         self.metadata = metadata or {}
+
+    @property
+    def data(self) -> np.ndarray:  # noqa: D102
+        return self._data
+
+    @data.setter
+    def data(self, value: np.ndarray):
+        """Set the image data, ensuring values are between 0 and 255."""
+        if not np.all(np.isnan(value) | ((MIN_PIXEL_VALUE <= value) & (value <= MAX_PIXEL_VALUE))):
+            raise ValueError("All values in the image data must be between 0 and 255, or NaNs.")
+        self._data = value.astype(PIXEL_DATA_TYPE)
 
     @property
     def is_grayscale(self) -> bool:  # noqa: D102
