@@ -99,6 +99,7 @@ class Retoucher:
             else:
                 reconstructed_data = channel_data
 
+        reconstructed_data = self._filter_predictions(reconstructed_data)
         return Image(reconstructed_data)
     
     def denoise_image(self, image: Image, factor: float) -> Image:
@@ -147,6 +148,7 @@ class Retoucher:
             else:
                 denoised_data = denoised_channel
 
+        denoised_data = self._filter_predictions(denoised_data)
         return Image(denoised_data)
 
     @staticmethod
@@ -163,7 +165,7 @@ class Retoucher:
         pass
 
     @staticmethod
-    def _get_non_nan_data(data):
+    def _get_non_nan_data(data: np.ndarray):
         """Get the non-NaN coordinates and values from the image data.
 
         Args:
@@ -177,7 +179,7 @@ class Retoucher:
         return coords, values
 
     @staticmethod
-    def _get_grid_coords(data):
+    def _get_grid_coords(data: np.ndarray):
         """Get the grid coordinates and their normalized version.
 
         Args:
@@ -192,3 +194,10 @@ class Retoucher:
         grid_coords = np.c_[grid_x.ravel(), grid_y.ravel()]
         grid_coords_normalized = grid_coords / np.array([data.shape[0], data.shape[1]])
         return grid_coords, grid_coords_normalized
+
+    @staticmethod
+    def _filter_predictions(data: np.ndarray) -> np.ndarray:
+        """."""
+        min_pixel_value = 0
+        max_pixel_value = 255
+        return np.clip(data, min_pixel_value, max_pixel_value)
