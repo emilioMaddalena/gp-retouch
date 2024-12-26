@@ -3,10 +3,12 @@ from typing import Dict, Optional, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
 
 MIN_PIXEL_VALUE = 0
 MAX_PIXEL_VALUE = 255
 PIXEL_DATA_TYPE = float
+
 
 class Image:
     """Represents an image and provides the user basic manipulation methods.
@@ -52,7 +54,7 @@ class Image:
     @property
     def shape(self) -> tuple:  # noqa: D102
         return self.data.shape
-    
+
     @property
     def height(self) -> tuple:  # noqa: D102
         if self.is_grayscale:
@@ -60,7 +62,7 @@ class Image:
         elif self.is_rgb:
             height, _, _ = self.data.shape
         return height
-    
+
     @property
     def width(self) -> tuple:  # noqa: D102
         if self.is_grayscale:
@@ -80,10 +82,37 @@ class Image:
     def save(self, filepath: str):  # noqa: D102
         pass
 
-    def plot(self):  # noqa: D102
-        if self.is_rgb:
-            plt.imshow(self.data.astype(np.uint8))
+    def plot(self, plot_3d: bool = False):  # noqa: D102
+        """Plot the image either in 2D or 3D (only for grayscale images).
+
+        Args:
+            plot_3d (bool, optional): Enables 3D interactive plotting. Defaults to False.
+        """
+        if plot_3d:
+            if self.is_rgb:
+                raise ValueError("Cannot 3D plot an RGB image.")
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection="3d")
+            x, y = np.meshgrid(np.arange(self.data.shape[1]), np.arange(self.data.shape[0]))
+            if self.is_rgb:
+                ax.plot_surface(
+                    x,
+                    y,
+                    self.data[:, :, 0],
+                    rstride=1,
+                    cstride=1,
+                    facecolors=self.data / 255,
+                    shade=False,
+                )
+            else:
+                ax.plot_surface(
+                    x, y, self.data, cmap="gray", rstride=1, cstride=1, vmin=0, vmax=255
+                )
+            plt.show()
         else:
-            plt.imshow(self.data, cmap='gray', vmin=0, vmax=255)
-        plt.axis("off")  
-        plt.show()
+            if self.is_rgb:
+                plt.imshow(self.data.astype(np.uint8))
+            else:
+                plt.imshow(self.data, cmap="gray", vmin=0, vmax=255)
+            plt.axis("off")
+            plt.show()
