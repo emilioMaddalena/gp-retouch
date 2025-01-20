@@ -1,10 +1,9 @@
 import copy
 
-import matplotlib.pyplot as plt
 import numpy as np
 from skimage.transform import resize
 
-from .image import Image
+from .image import MAX_PIXEL_VALUE, MIN_PIXEL_VALUE, PIXEL_DATA_TYPE, Image
 
 
 class ImageProcessor:
@@ -85,7 +84,7 @@ class ImageProcessor:
         std_dev = np.sqrt(variance)
         noise = np.random.normal(mean, std_dev, image.data.shape)
         # Add noise to the image
-        image.data = ImageProcessor._filter_values(image.data + noise)
+        image.data = ImageProcessor._conform_to_image_data_reqs(image.data + noise)
         return image
     
     @staticmethod
@@ -119,7 +118,7 @@ class ImageProcessor:
             raise ValueError("Variance must be non-negative.")
 
         noise = np.random.normal(0, np.sqrt(variance), image.data.shape)
-        image.data = ImageProcessor._filter_values(image.data + image.data * noise)
+        image.data = ImageProcessor._conform_to_image_data_reqs(image.data + image.data * noise)
         return image
 
     @staticmethod
@@ -129,7 +128,7 @@ class ImageProcessor:
             raise ValueError("Intensity must be non-negative.")
 
         noise = np.random.uniform(-intensity, intensity, image.data.shape)
-        image.data = ImageProcessor._filter_values(image.data + noise)
+        image.data = ImageProcessor._conform_to_image_data_reqs(image.data + noise)
         return image
 
     @staticmethod
@@ -217,8 +216,15 @@ class ImageProcessor:
         return image
 
     @staticmethod
-    def _filter_values(data: np.ndarray) -> np.ndarray:
-        """."""
-        min_pixel_value = 0
-        max_pixel_value = 255
-        return np.clip(data, min_pixel_value, max_pixel_value)
+    def _conform_to_image_data_reqs(data: np.ndarray) -> np.ndarray:
+        """"Ensure compliance with the Image @data.setter method.
+
+        Args:
+            data (np.ndarray): Input data to be transformed.
+
+        Returns:
+            np.ndarray: Data that can be used by Image.
+        """
+        data = np.clip(data, MIN_PIXEL_VALUE, MAX_PIXEL_VALUE)
+        data = data.astype(PIXEL_DATA_TYPE)
+        return data

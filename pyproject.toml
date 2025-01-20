@@ -24,7 +24,7 @@ include = ["pyproject.toml", "gp_retouch/**/*.py", "tests/**/*.py"]
 line-length = 100
 
 [tool.ruff.lint]
-select = ["D", "N", "I", "E501", "E"]
+select = ["D", "N", "I", "E501", "E", "F"]
 ignore = ["ANN", "D410", "D413", "D100", "D211", "D213", "D203"]
 exclude = [
     "**/__init__.py",

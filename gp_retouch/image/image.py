@@ -1,9 +1,7 @@
-from pathlib import Path
-from typing import Dict, Optional, Union
+from typing import Dict, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
-from mpl_toolkits.mplot3d import Axes3D
 
 MIN_PIXEL_VALUE = 0
 MAX_PIXEL_VALUE = 255
