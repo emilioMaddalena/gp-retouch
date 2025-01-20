@@ -1,9 +1,7 @@
-from pathlib import Path
-from typing import Dict, Optional, Union
+from typing import Dict, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
-from mpl_toolkits.mplot3d import Axes3D
 
 MIN_PIXEL_VALUE = 0
 MAX_PIXEL_VALUE = 255
@@ -33,7 +31,8 @@ class Image:
         self.metadata = metadata or {}
 
     @property
-    def data(self) -> np.ndarray:  # noqa: D102
+    def data(self) -> np.ndarray:
+        """Get the image data."""
         return self._data
 
     @data.setter
@@ -44,19 +43,23 @@ class Image:
         self._data = value.astype(PIXEL_DATA_TYPE)
 
     @property
-    def is_grayscale(self) -> bool:  # noqa: D102
+    def is_grayscale(self) -> bool:  
+        """Check if the image is grayscale."""
         return True if len(self.data.shape) == 2 else False
 
     @property
-    def is_rgb(self) -> bool:  # noqa: D102
+    def is_rgb(self) -> bool:  
+        """Check if the image is RGB."""
         return True if (len(self.data.shape) == 3) and (self.data.shape[2] == 3) else False
 
     @property
-    def shape(self) -> tuple:  # noqa: D102
+    def shape(self) -> tuple:
+        """Get the image shape."""
         return self.data.shape
 
     @property
-    def height(self) -> tuple:  # noqa: D102
+    def height(self) -> tuple:  
+        """Get the image height."""
         if self.is_grayscale:
             height, _ = self.data.shape
         elif self.is_rgb:
@@ -64,7 +67,8 @@ class Image:
         return height
 
     @property
-    def width(self) -> tuple:  # noqa: D102
+    def width(self) -> tuple: 
+        """Get the image width."""
         if self.is_grayscale:
             _, width = self.data.shape
         elif self.is_rgb:
@@ -72,17 +76,15 @@ class Image:
         return width
 
     @property
-    def is_incomplete(self) -> bool:  # noqa: D102
+    def is_incomplete(self) -> bool: 
+        """Check if the image has any NaN values."""
         return np.isnan(self.data).any()
 
     def get_completeness_ratio(self) -> float:
         """Compute the percentage of pixels that are not nans."""
         return 1 - (np.sum(np.isnan(self.data)) / self.data.size)
 
-    def save(self, filepath: str):  # noqa: D102
-        pass
-
-    def plot(self, plot_3d: bool = False):  # noqa: D102
+    def plot(self, plot_3d: bool = False):  
         """Plot the image either in 2D or 3D (only for grayscale images).
 
         Args:
