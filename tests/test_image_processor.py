@@ -2,10 +2,9 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from PIL import Image as PILImage
 
 import gp_retouch
-from gp_retouch.image.image import Image
+from gp_retouch.image.image import MAX_PIXEL_VALUE, MIN_PIXEL_VALUE, Image
 from gp_retouch.image.image_processor import ImageProcessor
 
 
@@ -46,7 +45,7 @@ def test_add_gaussian_noise(grayscale_image, variance):  # noqa: D103
     noisy_image = ImageProcessor.add_noise(grayscale_image, method="gaussian", variance=variance)
     assert isinstance(noisy_image, Image)
     assert noisy_image.shape == grayscale_image.shape
-    assert noisy_image.get_completeness_ratio() == 1.
+    assert noisy_image.get_completeness_ratio() == 1.0
     if variance == 0:
         assert np.all(noisy_image.data == grayscale_image.data)
 
@@ -66,15 +65,15 @@ def test_add_salt_and_pepper_noise(grayscale_image, amount, salt_ratio):  # noqa
     )
     assert isinstance(noisy_image, Image)
     assert noisy_image.shape == grayscale_image.shape
-    assert noisy_image.get_completeness_ratio() == 1.
-    
+    assert noisy_image.get_completeness_ratio() == 1.0
+
 
 @pytest.mark.parametrize("variance", [0, 10, 100, 1000])
 def test_add_speckle_noise(grayscale_image, variance):  # noqa: D103
     noisy_image = ImageProcessor.add_noise(grayscale_image, method="speckle", variance=variance)
     assert isinstance(noisy_image, Image)
     assert noisy_image.shape == grayscale_image.shape
-    assert noisy_image.get_completeness_ratio() == 1.
+    assert noisy_image.get_completeness_ratio() == 1.0
     if variance == 0:
         assert np.all(noisy_image.data == grayscale_image.data)
 
@@ -84,8 +83,26 @@ def test_add_uniform_noise(grayscale_image, intensity):  # noqa: D103
     noisy_image = ImageProcessor.add_noise(grayscale_image, method="uniform", intensity=intensity)
     assert isinstance(noisy_image, Image)
     assert noisy_image.shape == grayscale_image.shape
-    assert noisy_image.get_completeness_ratio() == 1.
+    assert noisy_image.get_completeness_ratio() == 1.0
     if intensity == 0:
         assert np.all(noisy_image.data == grayscale_image.data)
 
-    
+
+def test_conform_to_image_data_reqs():  # noqa: D103
+    bad_data = np.full((3, 3), MIN_PIXEL_VALUE - 1)
+    with pytest.raises(ValueError):
+        Image(data=bad_data)  # Should raise a ValueError
+    good_data = ImageProcessor._conform_to_image_data_reqs(bad_data)
+    try:
+        Image(data=good_data)  # Should not raise an error
+    except ValueError:
+        pytest.fail("ValueError was raised")
+
+    bad_data = np.full((3, 3), MAX_PIXEL_VALUE + 1)
+    with pytest.raises(ValueError):
+        Image(data=bad_data)  # Should raise a ValueError
+    good_data = ImageProcessor._conform_to_image_data_reqs(bad_data)
+    try:
+        Image(data=good_data)  # Should not raise an error
+    except ValueError:
+        pytest.fail("ValueError was raised")
