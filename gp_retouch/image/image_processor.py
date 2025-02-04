@@ -103,12 +103,12 @@ class ImageProcessor:
         salt_coords = tuple(
             np.random.randint(0, i, num_salt) for i in image.data.shape[:2]
         )
-        image.data[salt_coords] = 255
+        image.data[salt_coords] = MAX_PIXEL_VALUE
         # Add pepper noise
         pepper_coords = tuple(
             np.random.randint(0, i, num_pepper) for i in image.data.shape[:2]
         )
-        image.data[pepper_coords] = 0
+        image.data[pepper_coords] = MIN_PIXEL_VALUE
         return image
 
     @staticmethod
