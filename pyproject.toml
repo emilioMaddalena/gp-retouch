@@ -16,8 +16,10 @@ dependencies = [
     "scikit-image>=0.24.0",
 ]
 
-[tool.setuptools]
-packages = ["gp_retouch"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["gp_retouch*"]
+exclude = ["tests*"]
 
 [tool.ruff]
 include = ["pyproject.toml", "gp_retouch/**/*.py", "tests/**/*.py"]
@@ -28,6 +30,6 @@ select = ["D", "N", "I", "E501", "E", "F"]
 ignore = ["ANN", "D410", "D413", "D100", "D211", "D213", "D203"]
 exclude = [
     "**/__init__.py",
-    "notebooks/",  # Ignore build artifacts
-    "docs/",   # Ignore documentation files
+    "notebooks/",
+    "docs/",
 ]
