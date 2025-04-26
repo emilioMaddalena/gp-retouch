@@ -43,12 +43,12 @@ class Image:
         self._data = value.astype(PIXEL_DATA_TYPE)
 
     @property
-    def is_grayscale(self) -> bool:  
+    def is_grayscale(self) -> bool:
         """Check if the image is grayscale."""
         return True if len(self.data.shape) == 2 else False
 
     @property
-    def is_rgb(self) -> bool:  
+    def is_rgb(self) -> bool:
         """Check if the image is RGB."""
         return True if (len(self.data.shape) == 3) and (self.data.shape[2] == 3) else False
 
@@ -58,7 +58,7 @@ class Image:
         return self.data.shape
 
     @property
-    def height(self) -> tuple:  
+    def height(self) -> tuple:
         """Get the image height."""
         if self.is_grayscale:
             height, _ = self.data.shape
@@ -67,7 +67,7 @@ class Image:
         return height
 
     @property
-    def width(self) -> tuple: 
+    def width(self) -> tuple:
         """Get the image width."""
         if self.is_grayscale:
             _, width = self.data.shape
@@ -76,7 +76,7 @@ class Image:
         return width
 
     @property
-    def is_incomplete(self) -> bool: 
+    def is_incomplete(self) -> bool:
         """Check if the image has any NaN values."""
         return np.isnan(self.data).any()
 
@@ -84,7 +84,7 @@ class Image:
         """Compute the percentage of pixels that are not nans."""
         return 1 - (np.sum(np.isnan(self.data)) / self.data.size)
 
-    def plot(self, plot_3d: bool = False):  
+    def plot(self, plot_3d: bool = False):
         """Plot the image either in 2D or 3D (only for grayscale images).
 
         Args:
@@ -103,18 +103,25 @@ class Image:
                     self.data[:, :, 0],
                     rstride=1,
                     cstride=1,
-                    facecolors=self.data / 255,
+                    facecolors=self.data / MAX_PIXEL_VALUE,
                     shade=False,
                 )
             else:
                 ax.plot_surface(
-                    x, y, self.data, cmap="gray", rstride=1, cstride=1, vmin=0, vmax=255
+                    x,
+                    y,
+                    self.data,
+                    cmap="gray",
+                    rstride=1,
+                    cstride=1,
+                    vmin=MIN_PIXEL_VALUE,
+                    vmax=MAX_PIXEL_VALUE,
                 )
             plt.show()
         else:
             if self.is_rgb:
                 plt.imshow(self.data.astype(np.uint8))
             else:
-                plt.imshow(self.data, cmap="gray", vmin=0, vmax=255)
+                plt.imshow(self.data, cmap="gray", vmin=MIN_PIXEL_VALUE, vmax=MAX_PIXEL_VALUE)
             plt.axis("off")
             plt.show()
