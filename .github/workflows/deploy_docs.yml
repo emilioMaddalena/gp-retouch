@@ -24,14 +24,5 @@ jobs:
       - name: Install the project
         run: uv pip install -e .
 
-      - name: Install mkdocs
-        run: uv pip install mkdocs-material mkdocs-autorefs mkdocstrings[python]
-
-      - name: Verify mkdocs installation
-        run: |
-          uv pip show mkdocs
-          uv pip list
-          which mkdocs
-      
       - name: Deploy docs
-        run: mkdocs gh-deploy --force
+        run: uv run mkdocs gh-deploy --force
