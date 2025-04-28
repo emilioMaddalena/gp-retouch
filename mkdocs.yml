@@ -1,4 +1,4 @@
-site_name: GP-Retouch Documentation
+site_name: gp-retouch documentation
 site_description: Documentation for the gp-retouch package
 repo_url: https://github.com/emilioMaddalena/gp-retouch
 repo_name: emilioMaddalena/gp-retouch
@@ -17,6 +17,15 @@ theme:
 
 plugins:
   - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: true
+            docstring_style: google
+            show_if_no_docstring: true
+            separate_signature: true
+            show_signature_annotations: true
   - autorefs
   - mkdocstrings:
       handlers:
@@ -44,4 +53,5 @@ nav:
   - Usage: usage.md
   - API Reference:
     - Image: api/image.md
+    - Image Processor: api/image_processor.md
   - Contributing: contributing.md
