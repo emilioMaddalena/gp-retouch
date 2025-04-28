@@ -17,15 +17,6 @@ theme:
 
 plugins:
   - search
-  - mkdocstrings:
-      handlers:
-        python:
-          options:
-            show_source: true
-            docstring_style: google
-            show_if_no_docstring: true
-            separate_signature: true
-            show_signature_annotations: true
   - autorefs
   - mkdocstrings:
       handlers:
