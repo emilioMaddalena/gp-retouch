@@ -30,4 +30,4 @@ jobs:
         run: uv pip install mkdocs-material mkdocs-autorefs mkdocstrings[python]
       
       - name: Deploy docs
-        run: mkdocs gh-deploy --force
+        run: uv run mkdocs gh-deploy --force
