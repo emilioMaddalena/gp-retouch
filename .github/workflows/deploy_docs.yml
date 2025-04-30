@@ -31,3 +31,6 @@ jobs:
       
       - name: Build docs
         run: uv run mkdocs build
+      
+      - name: Deploy docs
+        run: uv run mkdocs gh-deploy --force
