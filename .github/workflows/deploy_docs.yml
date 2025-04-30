@@ -31,9 +31,7 @@ jobs:
       - name: Install the project
         run: |
           uv pip install -e .
-          # Verify package is importable
-          python -c "import gp_retouch; print(f'Package installed at: {gp_retouch.__file__}')"
-
+          
       - name: Install mkdocs
         run: uv pip install mkdocs-material mkdocs-autorefs mkdocstrings[python]
       
