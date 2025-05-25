@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://emiliomaddalena.github.io/gp-retouch/</loc>
+         <lastmod>2025-05-25</lastmod>
+    </url>
+    <url>
+         <loc>https://emiliomaddalena.github.io/gp-retouch/contributing/</loc>
+         <lastmod>2025-05-25</lastmod>
+    </url>
+    <url>
+         <loc>https://emiliomaddalena.github.io/gp-retouch/installation/</loc>
+         <lastmod>2025-05-25</lastmod>
+    </url>
+    <url>
+         <loc>https://emiliomaddalena.github.io/gp-retouch/usage/</loc>
+         <lastmod>2025-05-25</lastmod>
+    </url>
+    <url>
+         <loc>https://emiliomaddalena.github.io/gp-retouch/api/image/</loc>
+         <lastmod>2025-05-25</lastmod>
+    </url>
+    <url>
+         <loc>https://emiliomaddalena.github.io/gp-retouch/api/image_processor/</loc>
+         <lastmod>2025-05-25</lastmod>
+    </url>
+</urlset>
