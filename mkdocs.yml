@@ -1,6 +1,7 @@
 site_name: gp-retouch documentation
 site_description: Documentation for the gp-retouch package
 repo_url: https://github.com/emilioMaddalena/gp-retouch
+site_url: https://emiliomaddalena.github.io/gp-retouch/
 repo_name: emilioMaddalena/gp-retouch
 
 theme:
