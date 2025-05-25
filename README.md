@@ -2,6 +2,7 @@
 
 ![Tests](https://github.com/emilioMaddalena/gp-retouch/actions/workflows/run_tests.yml/badge.svg?branch=main)
 ![Lint Status](https://github.com/emilioMaddalena/gp-retouch/actions/workflows/run_linter.yml/badge.svg?branch=main)
+![Coverage](https://codecov.io/gh/emilioMaddalena/gp-retouch/branch/main/graph/badge.svg)
 
 `gp-retouch` is a Gaussian process-based image processing package.
 
