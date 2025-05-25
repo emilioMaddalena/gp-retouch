@@ -1,6 +1,7 @@
 # gp-retouch
 
 ![Tests](https://github.com/emilioMaddalena/gp-retouch/actions/workflows/run_tests.yml/badge.svg?branch=main)
+![Coverage](https://codecov.io/gh/emilioMaddalena/gp-retouch/branch/main/graph/badge.svg)
 ![Lint Status](https://github.com/emilioMaddalena/gp-retouch/actions/workflows/run_linter.yml/badge.svg?branch=main)
 ![Docs](https://github.com/emilioMaddalena/gp-retouch/actions/workflows/deploy_docs.yml/badge.svg?branch=main)
 
